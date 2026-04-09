@@ -1,0 +1,32 @@
+device: "cuda"
+run: "dummy"
+seed: 1337
+rank: 0
+local_rank: 0
+world_size: 1
+dtype: "bfloat16"
+
+matmul_tf32: "high"
+cudnn_tf32: true
+cudnn_sdp: false 
+flash_sdp: true
+mem_efficient_sdp: false
+math_sdp: false
+
+train_data: "../data/datasets/fineweb10B_sp1024/fineweb_train_*.bin"
+val_data: "../data/datasets/fineweb10B_sp1024/fineweb_val_*.bin"
+
+tokenizer_name: "SentencePiece"
+tokenizer_path: "../data/tokenizers/fineweb_1024_bpe.model"
+
+model:
+  vocab_size: 1024
+
+training:
+
+validation:
+  val_batch_size: 524288
+  val_loss_every: 1000
+  train_log_every: 200
+
+  

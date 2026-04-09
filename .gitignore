@@ -1,0 +1,16 @@
+data
+# data/tokenizers
+# data/datasets
+# data/manifest.json
+# data/docs_selected.jsonl
+__pycache__/
+.DS_Store
+modded-nanogpt/
+modded-nanogpt
+.mypy_cache/
+venv
+logs/
+test.ipynb
+.env
+docs
+offline_packages
