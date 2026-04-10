@@ -6,13 +6,12 @@ import torch
 from config import load_config
 from setup import setup
 from utils.device import (
-    print0,
     get_peak_flops,
     detect_compute_dtype
 )
 from utils.log import setup_logger, DummyWandb
 from flash_attention import define_using_fa3
-from tokenizers.tokenizer import get_tokenizer
+from tokenizers.tokenizer_utils import get_tokenizer
 
 logger = setup_logger(
     os.environ.get("LOG_LEVEL", "INFO"),
@@ -33,11 +32,11 @@ def main():
     if device == "cuda":
         gpu_device_name = torch.cuda.get_device_name(0)
         gpu_peak_flops = get_peak_flops(gpu_device_name)
-        print0(f"GPU: {gpu_device_name} | Peak FLOPS (BF16): {gpu_peak_flops:.2e}")
+        logger.info(f"GPU: {gpu_device_name} | Peak FLOPS (BF16): {gpu_peak_flops:.2e}")
     else:
         gpu_peak_flops = float('inf')
     
-    print0(f"COMPUTE_DTYPE: {COMPUTE_DTYPE} ({COMPUTE_DTYPE_REASON})")
+    logger.info(f"COMPUTE_DTYPE: {COMPUTE_DTYPE} ({COMPUTE_DTYPE_REASON})")
 
     use_dummy_wandb = cfg.run == "dummy" or not master_process
     wandb_run = DummyWandb() if use_dummy_wandb else ... # wandb.init(project="llm", name=args.run, config=user_cfg)
@@ -45,11 +44,13 @@ def main():
     using_fa3 = define_using_fa3()
 
     tokenizer = get_tokenizer(cfg.tokenizer_name, cfg.tokenizer_path)
-    # if int(tokenizer.vocab_size()) != cfg.model.vocab_size:
-    #     logger.error("")
-    #     raise ValueError(
-    #         f"VOCAB_SIZE={cfg.vocab_size} does not match tokenizer vocab_size={int(sp.vocab_size())}"
-    #     )
+    tokenizer_vocab_size = tokenizer.get_vocab_size()
+    if tokenizer_vocab_size != cfg.model.vocab_size:
+        logger.error("")
+        raise ValueError(
+            f"VOCAB_SIZE={cfg.model.vocab_size} does not match tokenizer vocab_size={int(tokenizer_vocab_size)}"
+        )
+    logger.info(f"Vocab size: {tokenizer_vocab_size:,}")
 
 if __name__ == "__main__":
     main()

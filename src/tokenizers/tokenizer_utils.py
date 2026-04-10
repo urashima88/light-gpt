@@ -1,0 +1,30 @@
+import os
+
+from utils.log import setup_logger
+from tokenizers.sentencepiece_tokenizer import SentencePieceTokenizer
+
+logger = setup_logger(
+    os.environ.get("LOG_LEVEL", "INFO"),
+    bool(int(os.environ.get("USE_STREAM_HANDLER", 1))),
+    bool(int(os.environ.get("USE_FILE_HANDLER", 0)))
+)
+
+def get_tokenizer(
+    tokenizer_name: str,
+    tokenizer_path: str
+    ):
+    match(tokenizer_name):
+        case "SentencePiece":
+            if not tokenizer_path.endswith(".model"):
+                logger.error("")
+                raise ValueError(f"Script only setup for SentencePiece .model file: {tokenizer_path}")
+            tokenizer = SentencePieceTokenizer.from_model_file(tokenizer_path)
+        case "HuggingFace":
+            ...
+        case "RustBPE":
+            ...
+        case _:
+            logger.error("")
+            raise ValueError(f"tokenizer_name was not set")
+    
+    return tokenizer

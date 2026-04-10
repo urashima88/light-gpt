@@ -1,7 +1,7 @@
 import os
 
 import torch
-from utils.log import print0, setup_logger
+from utils.log import setup_logger
 
 logger = setup_logger(
     os.environ.get("LOG_LEVEL", "INFO"),
@@ -16,7 +16,7 @@ def autodetect_device_type() -> str:
         device = "mps"
     else:
         device = "cpu"
-    print0(f"Autodetected device type: {device}")
+    logger.info(f"Autodetected device type: {device}")
     return device
 
 def get_peak_flops(device_name: str) -> float:

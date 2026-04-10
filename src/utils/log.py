@@ -2,11 +2,6 @@ import logging
 import re
 import os
 
-def print0(s="", **kwargs) -> None:
-    ddp_rank = int(os.environ.get('RANK', 0))
-    if ddp_rank == 0:
-        print(s, **kwargs)
-
 class DummyWandb:
     """Useful if we wish to not use wandb but have all the same signatures"""
     def __init__(self):
@@ -42,6 +37,16 @@ class ColoredFormatter(logging.Formatter):
             message = re.sub(r'(Shard \d+)', rf'{self.COLORS["INFO"]}{self.BOLD}\1{self.RESET}', message)
         return message
     
+class RankFilter(logging.Filter):
+    def __init__(self, master_only=True):
+        super().__init__()
+        self.master_only = master_only
+
+    def filter(self, record):
+        if not self.master_only:
+            return True
+        rank = int(os.environ.get('RANK', 0))
+        return rank == 0
 
 def setup_logger(
         log_level: str, 
@@ -61,7 +66,7 @@ def setup_logger(
         case "CRITICAL":
             level = logging.CRITICAL
         case _:
-            print0(f"The selected logging level {log_level} is incorrect, switching to INFO level.")
+            print(f"The selected logging level {log_level} is incorrect, switching to INFO level.")
             level = logging.INFO
 
     os.makedirs(logs_dir, exist_ok=True)
@@ -70,10 +75,12 @@ def setup_logger(
     if use_stream_handler:
         stream_handler = logging.StreamHandler()
         stream_handler.setFormatter(ColoredFormatter('%(asctime)s - %(filename)s - %(levelname)s - %(message)s'))
+        stream_handler.addFilter(RankFilter(master_only=True))
         handlers.append(stream_handler)
     if use_file_handler:
         file_handler = logging.FileHandler(f"{logs_dir}/{__file__}.log", mode="w")
-        stream_handler.setFormatter(ColoredFormatter('%(asctime)s - %(filename)s - %(levelname)s - %(message)s'))
+        file_handler.setFormatter(ColoredFormatter('%(asctime)s - %(filename)s - %(levelname)s - %(message)s'))
+        file_handler.addFilter(RankFilter(master_only=True))
         handlers.append(file_handler)
 
     logging.basicConfig(
