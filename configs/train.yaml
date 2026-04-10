@@ -1,9 +1,6 @@
 device: "cuda"
 run: "dummy"
 seed: 1337
-rank: 0
-local_rank: 0
-world_size: 1
 dtype: "bfloat16"
 
 matmul_tf32: "high"
