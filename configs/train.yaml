@@ -10,16 +10,18 @@ flash_sdp: true
 mem_efficient_sdp: false
 math_sdp: false
 
-train_data: "../data/datasets/fineweb10B_sp1024/fineweb_train_*.bin"
-val_data: "../data/datasets/fineweb10B_sp1024/fineweb_val_*.bin"
+dataset_name: "FineWeb"
+train_data: "data/datasets/fineweb10B_sp1024/fineweb_train_*.bin"
+val_data: "data/datasets/fineweb10B_sp1024/fineweb_val_*.bin"
 
 tokenizer_name: "SentencePiece"
-tokenizer_path: "../data/tokenizers/fineweb_1024_bpe.model"
+tokenizer_path: "data/tokenizers/fineweb_1024_bpe.model"
 
 model:
   vocab_size: 1024
 
 training:
+  train_seq_len: 1024
 
 validation:
   val_batch_size: 524288

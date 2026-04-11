@@ -13,15 +13,16 @@ def get_tokenizer(
     tokenizer_name: str,
     tokenizer_path: str
     ):
+    tokenizer_name = tokenizer_name.lower()
     match(tokenizer_name):
-        case "SentencePiece":
+        case "sentencepiece":
             if not tokenizer_path.endswith(".model"):
                 logger.error("")
                 raise ValueError(f"Script only setup for SentencePiece .model file: {tokenizer_path}")
             tokenizer = SentencePieceTokenizer.from_model_file(tokenizer_path)
-        case "HuggingFace":
+        case "huggingface":
             ...
-        case "RustBPE":
+        case "rustbpe":
             ...
         case _:
             logger.error("")

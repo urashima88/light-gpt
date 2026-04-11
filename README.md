@@ -2,4 +2,4 @@
 
 ## Training
 
-`python train.py --env=../.env --config=../configs/train.yaml`
+`python src/train.py --env=.env --config=configs/train.yaml`

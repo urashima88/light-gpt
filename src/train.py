@@ -3,7 +3,7 @@ import os
 import torch
 # import wandb
 
-from config import load_config
+from config.load import load_config
 from setup import setup
 from utils.device import (
     get_peak_flops,
@@ -12,6 +12,7 @@ from utils.device import (
 from utils.log import setup_logger, DummyWandb
 from flash_attention import define_using_fa3
 from tokenizers.tokenizer_utils import get_tokenizer
+from data.data_utils import get_dataset
 
 logger = setup_logger(
     os.environ.get("LOG_LEVEL", "INFO"),
@@ -23,6 +24,8 @@ logger = setup_logger(
 def main():
     cfg = load_config()
     COMPUTE_DTYPE, COMPUTE_DTYPE_REASON = detect_compute_dtype(cfg.dtype)
+
+    logger.info(f"COMPUTE_DTYPE: {COMPUTE_DTYPE} ({COMPUTE_DTYPE_REASON})")
     
     is_ddp_requested, ddp_rank, ddp_local_rank, ddp_world_size, device = setup(cfg)
     master_process = ddp_rank == 0
@@ -35,8 +38,6 @@ def main():
         logger.info(f"GPU: {gpu_device_name} | Peak FLOPS (BF16): {gpu_peak_flops:.2e}")
     else:
         gpu_peak_flops = float('inf')
-    
-    logger.info(f"COMPUTE_DTYPE: {COMPUTE_DTYPE} ({COMPUTE_DTYPE_REASON})")
 
     use_dummy_wandb = cfg.run == "dummy" or not master_process
     wandb_run = DummyWandb() if use_dummy_wandb else ... # wandb.init(project="llm", name=args.run, config=user_cfg)
@@ -51,6 +52,12 @@ def main():
             f"VOCAB_SIZE={cfg.model.vocab_size} does not match tokenizer vocab_size={int(tokenizer_vocab_size)}"
         )
     logger.info(f"Vocab size: {tokenizer_vocab_size:,}")
+
+    train_dataset = ...
+    val_dataset = get_dataset(cfg.dataset_name, pattern=cfg.val_data, seq_len=cfg.training.train_seq_len)
+
+    logger.info(f"val_dataset: tokens: {val_dataset.tokens.numel()-1}")
+
 
 if __name__ == "__main__":
     main()
