@@ -3,6 +3,7 @@ import os
 
 from utils.log import setup_logger
 from tokenizers.tokenizer import Tokenizer
+from utils.exceptions import fatal
 
 logger = setup_logger(
     os.environ.get("LOG_LEVEL", "INFO"),
@@ -21,8 +22,7 @@ class SentencePieceTokenizer(Tokenizer):
 
     def encode(self, text, prepend=None, append=None):
         if not isinstance(text, str) and not isinstance(text, list):
-            logger.error("")
-            raise TypeError(f"Unsupported type {type(text)}")
+            raise fatal(TypeError, f"Unsupported type {type(text)}", logger)
 
         ids = []
         if prepend is not None:

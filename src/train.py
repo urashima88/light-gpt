@@ -1,4 +1,5 @@
 import os
+import sys
 
 import torch
 # import wandb
@@ -13,12 +14,14 @@ from utils.log import setup_logger, DummyWandb
 from flash_attention import define_using_fa3
 from tokenizers.tokenizer_utils import get_tokenizer
 from data.data_utils import get_dataset
+from utils.exceptions import fatal, handle_exception
 
 logger = setup_logger(
     os.environ.get("LOG_LEVEL", "INFO"),
     bool(int(os.environ.get("USE_STREAM_HANDLER", 1))),
     bool(int(os.environ.get("USE_FILE_HANDLER", 0)))
 )
+sys.excepthook = handle_exception
 
 
 def main():
@@ -47,9 +50,10 @@ def main():
     tokenizer = get_tokenizer(cfg.tokenizer_name, cfg.tokenizer_path)
     tokenizer_vocab_size = tokenizer.get_vocab_size()
     if tokenizer_vocab_size != cfg.model.vocab_size:
-        logger.error("")
-        raise ValueError(
-            f"VOCAB_SIZE={cfg.model.vocab_size} does not match tokenizer vocab_size={int(tokenizer_vocab_size)}"
+        raise fatal(
+            ValueError,
+            f"VOCAB_SIZE={cfg.model.vocab_size} does not match tokenizer vocab_size={int(tokenizer_vocab_size)}",
+            logger
         )
     logger.info(f"Vocab size: {tokenizer_vocab_size:,}")
 

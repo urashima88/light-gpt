@@ -1,6 +1,8 @@
 import logging
+from logging import Logger
 import re
 import os
+import sys
 
 class DummyWandb:
     """Useful if we wish to not use wandb but have all the same signatures"""
@@ -11,7 +13,7 @@ class DummyWandb:
     def finish(self):
         pass
 
-class ColoredFormatter(logging.Formatter):
+class CustomFormatter(logging.Formatter):
     """Custom formatter that adds colors to log messages."""
     # ANSI color codes
     COLORS = {
@@ -24,6 +26,10 @@ class ColoredFormatter(logging.Formatter):
     RESET = '\033[0m'
     BOLD = '\033[1m'
     def format(self, record):
+        if hasattr(record, 'real_filename'):
+            record.filename = record.real_filename
+        if hasattr(record, 'real_lineno'):
+            record.lineno = record.real_lineno
         # Add color to the level name
         levelname = record.levelname
         if levelname in self.COLORS:
@@ -52,8 +58,8 @@ def setup_logger(
         log_level: str, 
         use_stream_handler: bool,
         use_file_handler: bool,
-        logs_dir: str = "logs"
-    ):
+        logs_dir: str = "../logs"
+    ) -> Logger:
     match (log_level.upper()):
         case "DEBUG":
             level = logging.DEBUG
@@ -74,12 +80,12 @@ def setup_logger(
     handlers = []
     if use_stream_handler:
         stream_handler = logging.StreamHandler()
-        stream_handler.setFormatter(ColoredFormatter('%(asctime)s - %(filename)s - %(levelname)s - %(message)s'))
+        stream_handler.setFormatter(CustomFormatter('%(asctime)s - %(filename)s:%(lineno)d - %(levelname)s - %(message)s'))
         stream_handler.addFilter(RankFilter(master_only=True))
         handlers.append(stream_handler)
     if use_file_handler:
         file_handler = logging.FileHandler(f"{logs_dir}/{__file__}.log", mode="w")
-        file_handler.setFormatter(ColoredFormatter('%(asctime)s - %(filename)s - %(levelname)s - %(message)s'))
+        file_handler.setFormatter(CustomFormatter('%(asctime)s - %(filename)s:%(lineno)d - %(levelname)s - %(message)s'))
         file_handler.addFilter(RankFilter(master_only=True))
         handlers.append(file_handler)
 

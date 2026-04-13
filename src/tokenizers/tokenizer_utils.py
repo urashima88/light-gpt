@@ -2,6 +2,7 @@ import os
 
 from utils.log import setup_logger
 from tokenizers.sentencepiece_tokenizer import SentencePieceTokenizer
+from utils.exceptions import fatal
 
 logger = setup_logger(
     os.environ.get("LOG_LEVEL", "INFO"),
@@ -17,15 +18,13 @@ def get_tokenizer(
     match(tokenizer_name):
         case "sentencepiece":
             if not tokenizer_path.endswith(".model"):
-                logger.error("")
-                raise ValueError(f"Script only setup for SentencePiece .model file: {tokenizer_path}")
+                raise fatal(ValueError, f"Script only setup for SentencePiece .model file: {tokenizer_path}", logger)
             tokenizer = SentencePieceTokenizer.from_model_file(tokenizer_path)
         case "huggingface":
             ...
         case "rustbpe":
             ...
         case _:
-            logger.error("")
-            raise ValueError(f"tokenizer_name was not set")
+            raise fatal(ValueError, f"tokenizer_name was not set", logger)
     
     return tokenizer

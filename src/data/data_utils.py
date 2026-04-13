@@ -2,6 +2,7 @@ import os
 
 from data.fineweb import FineWebDataset
 from utils.log import setup_logger
+from utils.exceptions import fatal
 
 logger = setup_logger(
     os.environ.get("LOG_LEVEL", "INFO"),
@@ -18,7 +19,6 @@ def get_dataset(
         case "fineweb":
             dataset = FineWebDataset(**kwargs)
         case _:
-            logger.error("")
-            raise ValueError(f"dataset_name was not set")
+            raise fatal(ValueError, f"dataset_name was not set", logger)
         
     return dataset

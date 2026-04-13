@@ -8,6 +8,7 @@ import numpy as np
 
 from data.base_dataset import BaseDataset
 from utils.log import setup_logger
+from utils.exceptions import fatal
 
 logger = setup_logger(
     os.environ.get("LOG_LEVEL", "INFO"),
@@ -28,14 +29,12 @@ class FineWebDataset(BaseDataset):
         '''
         files = [Path(p) for p in sorted(glob.glob(pattern))]
         if not files:
-            logger.error("")
-            raise FileNotFoundError(f"No files found for pattern: {pattern}")
+            raise fatal(FileNotFoundError, f"No files found for pattern: {pattern}", logger)
         
         tokens = torch.cat([self.load_data_shard(file) for file in files]).contiguous()
         usable = ((tokens.numel() - 1) // seq_len) * seq_len
         if usable <= 0:
-            logger.error("")
-            raise ValueError(f"Validation split is too short for TRAIN_SEQ_LEN={seq_len}")
+            raise fatal(ValueError, f"Validation split is too short for TRAIN_SEQ_LEN={seq_len}", logger)
         self.tokens = tokens[: usable + 1]
 
     @staticmethod
@@ -52,19 +51,16 @@ class FineWebDataset(BaseDataset):
         # 1 - format version
         # 2 - number of tokens
         if header.size != 256 or int(header[0]) != 20240520 or int(header[1]) != 1:
-            logger.error("")
-            raise ValueError(f"Unexpected shard header for {file}")
+            raise fatal(ValueError, f"Unexpected shard header for {file}", logger)
         
         num_tokens = int(header[2])
         expected_size = header_bytes + num_tokens * token_bytes
         if file.stat().st_size != expected_size:
-            logger.error("")
-            raise ValueError(f"Shard size mismatch for {file}: expected {expected_size} bytes")
+            raise fatal(ValueError, f"Shard size mismatch for {file}: expected {expected_size} bytes", logger)
         
         tokens_np = np.fromfile(file, dtype="<u2", count=num_tokens, offset=header_bytes)
         if tokens_np.size != num_tokens:
-            logger.error("")
-            raise ValueError(f"Short read for {file}")
+            raise fatal(ValueError, f"Short read for {file}", logger)
         
         return torch.from_numpy(tokens_np.astype(np.uint16, copy=False))
 
