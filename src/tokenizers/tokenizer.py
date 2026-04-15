@@ -28,9 +28,6 @@ class Tokenizer(ABC):
     def encode_special(self, token_str: str) -> int:
         pass
 
-    def get_vocab_size(self):
-        raise NotImplementedError("get_vocab_size() not supported for this tokenizer")
-
     def save(self, directory: str) -> None:
         raise NotImplementedError("save() not supported for this tokenizer")
 
