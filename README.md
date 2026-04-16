@@ -1,4 +1,4 @@
-# light-gpt
+# onion-knight
 
 ## Training
 
