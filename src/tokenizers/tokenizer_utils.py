@@ -25,6 +25,6 @@ def get_tokenizer(
         case "rustbpe":
             ...
         case _:
-            raise fatal(ValueError, f"tokenizer_name was not set", logger)
+            raise fatal(ValueError, f"tokenizer_name was not set or is incorrect", logger)
     
     return tokenizer

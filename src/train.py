@@ -15,7 +15,8 @@ from flash_attention import define_using_fa3
 from tokenizers.tokenizer_utils import get_tokenizer
 from data.data_utils import get_dataset
 from utils.exceptions import fatal, handle_exception
-from metrics.byte_statistics.byte_statistic_utils import create_byte_statistics_calculator
+from metrics.byte_statistics.byte_statistics_utils import create_byte_statistics_calculator
+from models.model_utils import create_model, prepare_model_for_training
 
 logger = setup_logger(
     os.environ.get("LOG_LEVEL", "INFO"),
@@ -63,8 +64,14 @@ def main():
 
     logger.info(f"val_dataset: tokens: {val_dataset.tokens.numel()-1}")
 
-    byte_stats_calc = create_byte_statistics_calculator(tokenizer=tokenizer, model_vocab_size=cfg.model.vocab_size)
-    base_bytes_lut, has_leading_space_lut, is_boundary_token_lut = byte_stats_calc.build_luts(device)
+    used_metrics = set(cfg.training.metrics)
+    logger.info(f"Used metrics: {','.join(used_metrics)}")
+    if "bpb" in used_metrics:
+        byte_stats_calc = create_byte_statistics_calculator(tokenizer=tokenizer, model_vocab_size=cfg.model.vocab_size)
+        base_bytes_lut, has_leading_space_lut, is_boundary_token_lut = byte_stats_calc.build_luts(device)
+
+    model = create_model(cfg.model)
+    model = prepare_model_for_training(model, cfg.model, device, COMPUTE_DTYPE)
 
 if __name__ == "__main__":
     main()

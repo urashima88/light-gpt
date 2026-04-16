@@ -19,9 +19,22 @@ tokenizer_path: "data/tokenizers/fineweb_1024_bpe.model"
 
 model:
   vocab_size: 1024
+  architecture: "gpt"
+  components:
+    linear_type: "CastedLinear"
+  control_tensor_name_patterns: [
+    "attn_scale", "attn_scales", "mlp_scale", "mlp_scales", "resid_mix", 
+    "resid_mixes", "q_gain", "skip_weight", "skip_weights"
+  ]
+  use_low_dim_params_in_fp32: true
+  compile:
+    use: true
+    dynamic: false
+    fullgraph: true
 
 training:
   train_seq_len: 1024
+  metrics: ["bpb"]
 
 validation:
   val_batch_size: 524288
