@@ -1,4 +1,4 @@
-import os
+from logging import Logger
 
 import torch
 
@@ -6,15 +6,9 @@ from models.base_model import BaseModel
 from models.gpt import GPT
 from models.components.linear import CastedLinear
 from utils.exceptions import fatal
-from utils.log import setup_logger
 
-logger = setup_logger(
-    os.environ.get("LOG_LEVEL", "INFO"),
-    bool(int(os.environ.get("USE_STREAM_HANDLER", 1))),
-    bool(int(os.environ.get("USE_FILE_HANDLER", 0)))
-)
 
-def create_model(model_cfg):
+def create_model(model_cfg, logger: Logger):
 
     architecture = model_cfg.architecture.lower()
     match(architecture):
@@ -30,18 +24,18 @@ def prepare_model_for_training(
         model_cfg,
         device: torch.device, 
         compute_dtype: torch.dtype,
-    ) -> BaseModel:
+    ):
     model.to(device, dtype=compute_dtype)
     for module in model.modules():
         if isinstance(module, CastedLinear):
             module.float()
     
-    if model_cfg.use_low_dim_params_in_fp32:
+    if model_cfg.restore_low_dim_params_in_fp32:
         model = restore_low_dim_params_to_fp32(model, model_cfg.control_tensor_name_patterns)   
 
     if model_cfg.compile.use:
         model = torch.compile(model, dynamic=model_cfg.compile.dynamic, fullgraph=model_cfg.compile.fullgraph)
-
+    
     return model
 
 def restore_low_dim_params_to_fp32(

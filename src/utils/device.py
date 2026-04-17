@@ -1,15 +1,9 @@
 import os
+from logging import Logger
 
 import torch
-from utils.log import setup_logger
 
-logger = setup_logger(
-    os.environ.get("LOG_LEVEL", "INFO"),
-    bool(int(os.environ.get("USE_STREAM_HANDLER", 1))),
-    bool(int(os.environ.get("USE_FILE_HANDLER", 0)))
-)
-
-def autodetect_device_type() -> str:
+def autodetect_device_type(logger: Logger) -> str:
     if torch.cuda.is_available():
         device = "cuda"
     elif torch.backends.mps.is_available():
@@ -19,7 +13,7 @@ def autodetect_device_type() -> str:
     logger.info(f"Autodetected device type: {device}")
     return device
 
-def get_peak_flops(device_name: str) -> float:
+def get_peak_flops(device_name: str, logger: Logger) -> float:
     '''
     Gets hardcoded BF16 peak flops for various GPUs
     '''

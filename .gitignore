@@ -4,9 +4,6 @@
 # data/manifest.json
 # data/docs_selected.jsonl
 __pycache__/
-.DS_Store
-modded-nanogpt/
-modded-nanogpt
 .mypy_cache/
 venv
 logs/

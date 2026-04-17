@@ -3,6 +3,19 @@ run: "dummy"
 seed: 1337
 dtype: "bfloat16"
 
+ddp:
+  use: false
+  rank: 0
+  local_rank: 0
+  world_size: 1
+  broadcast_buffers: false
+
+log:
+  log_level: "INFO"
+  use_stream_handler: true
+  use_file_handler: true
+  logs_dir: "logs"
+
 matmul_tf32: "high"
 cudnn_tf32: true
 cudnn_sdp: false 
@@ -26,7 +39,7 @@ model:
     "attn_scale", "attn_scales", "mlp_scale", "mlp_scales", "resid_mix", 
     "resid_mixes", "q_gain", "skip_weight", "skip_weights"
   ]
-  use_low_dim_params_in_fp32: true
+  restore_low_dim_params_in_fp32: true
   compile:
     use: true
     dynamic: false

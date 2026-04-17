@@ -1,4 +1,4 @@
-import os
+from logging import Logger
 from pathlib import Path
 import glob
 
@@ -7,18 +7,10 @@ from torch import Tensor
 import numpy as np
 
 from data.base_dataset import BaseDataset
-from utils.log import setup_logger
 from utils.exceptions import fatal
 
-logger = setup_logger(
-    os.environ.get("LOG_LEVEL", "INFO"),
-    bool(int(os.environ.get("USE_STREAM_HANDLER", 1))),
-    bool(int(os.environ.get("USE_FILE_HANDLER", 0)))
-)
-
-
 class FineWebDataset(BaseDataset):
-    def __init__(self, pattern: str, seq_len: int):
+    def __init__(self, logger: Logger, pattern: str, seq_len: int):
         '''
         ...
 
@@ -27,18 +19,19 @@ class FineWebDataset(BaseDataset):
         :param seq_len: the length of the context the model works with (the number of tokens fed to the model in one forward step).
         :type seq_len: int
         '''
+        self.logger = logger
+
         files = [Path(p) for p in sorted(glob.glob(pattern))]
         if not files:
-            raise fatal(FileNotFoundError, f"No files found for pattern: {pattern}", logger)
+            raise fatal(FileNotFoundError, f"No files found for pattern: {pattern}", self.logger)
         
         tokens = torch.cat([self.load_data_shard(file) for file in files]).contiguous()
         usable = ((tokens.numel() - 1) // seq_len) * seq_len
         if usable <= 0:
-            raise fatal(ValueError, f"Validation split is too short for TRAIN_SEQ_LEN={seq_len}", logger)
+            raise fatal(ValueError, f"Validation split is too short for TRAIN_SEQ_LEN={seq_len}", self.logger)
         self.tokens = tokens[: usable + 1]
 
-    @staticmethod
-    def load_data_shard(file: Path) -> Tensor:
+    def load_data_shard(self, file: Path) -> Tensor:
         '''
         Extracts a one-dimensional array of tokens in uint16 format from a file and returns it as a PyTorch tensor.
         '''
@@ -51,16 +44,16 @@ class FineWebDataset(BaseDataset):
         # 1 - format version
         # 2 - number of tokens
         if header.size != 256 or int(header[0]) != 20240520 or int(header[1]) != 1:
-            raise fatal(ValueError, f"Unexpected shard header for {file}", logger)
+            raise fatal(ValueError, f"Unexpected shard header for {file}", self.logger)
         
         num_tokens = int(header[2])
         expected_size = header_bytes + num_tokens * token_bytes
         if file.stat().st_size != expected_size:
-            raise fatal(ValueError, f"Shard size mismatch for {file}: expected {expected_size} bytes", logger)
+            raise fatal(ValueError, f"Shard size mismatch for {file}: expected {expected_size} bytes", self.logger)
         
         tokens_np = np.fromfile(file, dtype="<u2", count=num_tokens, offset=header_bytes)
         if tokens_np.size != num_tokens:
-            raise fatal(ValueError, f"Short read for {file}", logger)
+            raise fatal(ValueError, f"Short read for {file}", self.logger)
         
         return torch.from_numpy(tokens_np.astype(np.uint16, copy=False))
 

@@ -1,5 +1,6 @@
 import os
 import random
+from logging import Logger
 
 import numpy as np
 import torch
@@ -11,28 +12,10 @@ from torch.backends.cuda import (
     enable_mem_efficient_sdp
 )
 
-from utils.log import setup_logger
 from utils.device import autodetect_device_type
 
-logger = setup_logger(
-    os.environ.get("LOG_LEVEL", "INFO"),
-    bool(int(os.environ.get("USE_STREAM_HANDLER", 1))),
-    bool(int(os.environ.get("USE_FILE_HANDLER", 0)))
-)
-
-def get_dist_info():
-    if bool(int(os.environ.get("USE_DDP", 0))):
-        assert all(var in os.environ for var in ['RANK', 'LOCAL_RANK', 'WORLD_SIZE'])
-        ddp_rank = int(os.environ['RANK'])
-        ddp_local_rank = int(os.environ['LOCAL_RANK'])
-        ddp_world_size = int(os.environ['WORLD_SIZE'])
-        return True, ddp_rank, ddp_local_rank, ddp_world_size
-    else:
-        return False, 0, 0, 1
-
-def setup(cfg):
-
-    device = autodetect_device_type() if cfg.device == "" else cfg.device
+def setup(cfg, logger: Logger):
+    device = autodetect_device_type(logger) if cfg.device == "" else cfg.device
 
     assert device in ["cuda", "mps", "cpu"]
     if device == "cuda":
@@ -54,16 +37,15 @@ def setup(cfg):
         enable_mem_efficient_sdp(cfg.mem_efficient_sdp)
         enable_math_sdp(cfg.math_sdp)
 
-    is_ddp_requested, ddp_rank, ddp_local_rank, ddp_world_size = get_dist_info()
-    if is_ddp_requested and device == "cuda":
-        device = torch.device("cuda", ddp_local_rank)
+    if cfg.ddp.use and device == "cuda":
+        device = torch.device("cuda", cfg.ddp.local_rank)
         torch.cuda.set_device(device)
         dist.init_process_group(backend="nccl", device_id=device)
         dist.barrier()
     else:
         device = torch.device(device)
 
-    if ddp_rank == 0:
-        logger.info(f"Distributed world size: {ddp_world_size}")
+    if cfg.ddp.rank == 0:
+        logger.info(f"Distributed world size: {cfg.ddp.world_size}")
     
-    return is_ddp_requested, ddp_rank, ddp_local_rank, ddp_world_size, device
+    return cfg.ddp.use, cfg.ddp.rank, cfg.ddp.local_rank, cfg.ddp.world_size, device

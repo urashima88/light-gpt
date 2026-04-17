@@ -1,28 +1,22 @@
 import sentencepiece as spm
-import os
+from logging import Logger
 
-from utils.log import setup_logger
 from tokenizers.tokenizer import Tokenizer
 from utils.exceptions import fatal
 
-logger = setup_logger(
-    os.environ.get("LOG_LEVEL", "INFO"),
-    bool(int(os.environ.get("USE_STREAM_HANDLER", 1))),
-    bool(int(os.environ.get("USE_FILE_HANDLER", 0)))
-)
-
 class SentencePieceTokenizer(Tokenizer):
-    def __init__(self, sp_model: spm.SentencePieceProcessor):
+    def __init__(self, sp_model: spm.SentencePieceProcessor, logger: Logger):
         self.sp = sp_model
+        self.logger = logger
 
     @classmethod
-    def from_model_file(cls, model_path: str):
+    def from_model_file(cls, model_path: str, logger: Logger):
         sp = spm.SentencePieceProcessor(model_file=model_path)
-        return cls(sp)
+        return cls(sp, logger)
 
     def encode(self, text, prepend=None, append=None):
         if not isinstance(text, str) and not isinstance(text, list):
-            raise fatal(TypeError, f"Unsupported type {type(text)}", logger)
+            raise fatal(TypeError, f"Unsupported type {type(text)}", self.logger)
 
         ids = []
         if prepend is not None:

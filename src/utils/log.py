@@ -2,6 +2,7 @@ import logging
 from logging import Logger
 import re
 import os
+from pathlib import Path
 
 class Level:
     def __init__(self, type, color):
@@ -49,21 +50,34 @@ class CustomFormatter(logging.Formatter):
         return message
     
 class RankFilter(logging.Filter):
-    def __init__(self, master_only=True):
+    def __init__(self, rank: int, master_only=True):
         super().__init__()
+        self.rank = rank
         self.master_only = master_only
 
     def filter(self, record):
         if not self.master_only:
             return True
-        rank = int(os.environ.get('RANK', 0))
-        return rank == 0
+        return self.rank == 0
+    
+def _get_root(start_path: Path = None) -> Path:
+    if start_path is None:
+        start_path = Path(__file__).resolve().parent
+    else:
+        start_path = Path(start_path).resolve()
+
+    for parent in [start_path] + list(start_path.parents):
+        if (parent / '.git').is_dir():
+            return parent
+        
+    raise FileNotFoundError("Could not find repository root: none of the ancestors contains a .git folder")
 
 def setup_logger(
         log_level: str, 
         use_stream_handler: bool,
         use_file_handler: bool,
-        logs_dir: str = "../logs"
+        logs_dir: str,
+        rank: int,
     ) -> Logger:
     log_level = log_level.upper()
     if log_level in LEVELS:
@@ -72,23 +86,22 @@ def setup_logger(
         print(f"The selected logging level {log_level} is incorrect, switching to INFO level.")
         level = logging.INFO
 
-    os.makedirs(logs_dir, exist_ok=True)
-
-    handlers = []
+    logger = logging.getLogger()
+    logger.setLevel(level)
     if use_stream_handler:
         stream_handler = logging.StreamHandler()
         stream_handler.setFormatter(CustomFormatter('%(asctime)s - %(filename)s:%(lineno)d - %(levelname)s - %(message)s'))
-        stream_handler.addFilter(RankFilter(master_only=True))
-        handlers.append(stream_handler)
+        stream_handler.addFilter(RankFilter(rank=rank, master_only=True))
+        logger.addHandler(stream_handler)
     if use_file_handler:
-        file_handler = logging.FileHandler(f"{logs_dir}/{__file__}.log", mode="w")
-        file_handler.setFormatter(CustomFormatter('%(asctime)s - %(filename)s:%(lineno)d - %(levelname)s - %(message)s'))
-        file_handler.addFilter(RankFilter(master_only=True))
-        handlers.append(file_handler)
+        root = _get_root()
+        logs_dir_path = root / logs_dir
+        logs_dir_path.mkdir(parents=True, exist_ok=True)
+        log_file_path = logs_dir_path / "logs.log"
 
-    logging.basicConfig(
-        level=level,
-        handlers=handlers
-    )
+        file_handler = logging.FileHandler(log_file_path, mode="w")
+        file_handler.setFormatter(CustomFormatter('%(asctime)s - %(filename)s:%(lineno)d - %(levelname)s - %(message)s'))
+        file_handler.addFilter(RankFilter(rank=rank, master_only=True))
+        logger.addHandler(file_handler)
     
-    return logging.getLogger()
+    return logger

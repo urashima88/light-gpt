@@ -1,6 +1,6 @@
 from typing import Tuple
+from logging import Logger
 
-import sentencepiece as spm
 import torch
 from torch import Tensor
 import numpy as np
@@ -9,9 +9,10 @@ from metrics.byte_statistics.byte_statistics_calculator import ByteStatisticsCal
 from tokenizers.sentencepiece_tokenizer import SentencePieceTokenizer
 
 class SentencePieceByteStatistics(ByteStatisticsCalculator):
-    def __init__(self, tokenizer: SentencePieceTokenizer, model_vocab_size: int):
+    def __init__(self, tokenizer: SentencePieceTokenizer, model_vocab_size: int, logger: Logger):
         self.tokenizer = tokenizer
         self.model_vocab_size = model_vocab_size
+        self.logger = logger
 
     def build_luts(self, device: torch.device) -> Tuple[Tensor, Tensor, Tensor]:
         sp_vocab_size = int(self.tokenizer.get_vocab_size())
