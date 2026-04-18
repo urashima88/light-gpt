@@ -18,6 +18,8 @@ from data.data_utils import get_dataset
 from utils.exceptions import fatal, handle_exception
 from metrics.byte_statistics.byte_statistics_utils import create_byte_statistics_calculator
 from models.model_utils import create_model, prepare_model_for_training
+from utils.common import count_model_params
+from optimizers.optimizer_utils import set_optimizers
 
 sys.excepthook = handle_exception
 
@@ -81,6 +83,10 @@ def main():
     if is_ddp_requested:
         model = DDP(model, device_ids=[ddp_local_rank], broadcast_buffers=cfg.ddp.broadcast_buffers)
 
+    optimizers = set_optimizers(model, cfg)
+
+    n_params = count_model_params(model)
+    logger.info(f"Model params: {n_params}")
 
 if __name__ == "__main__":
     main()
