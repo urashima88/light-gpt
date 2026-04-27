@@ -7,10 +7,22 @@ qt_standard_project_setup()
 
 qt_add_executable(OnionKnight
     WIN32 MACOSX_BUNDLE
-    main.cpp
-    mainwindow.cpp
-    mainwindow.h
-    mainwindow.ui
+    src/main.cpp
+    src/app/main_window/mainwindow.cpp
+    src/app/main_window/mainwindow.h
+
+    src/app/work_field/workfield.h
+    src/app/work_field/work_field.cpp
+
+    src/app/work_field_view/workfieldview.h
+    src/app/work_field_view/workfieldview.cpp
+)
+
+target_include_directories(OnionKnight
+    PRIVATE
+        ${CMAKE_CURRENT_SOURCE_DIR}/src/app/main_window
+        ${CMAKE_CURRENT_SOURCE_DIR}/src/app/work_field
+        ${CMAKE_CURRENT_SOURCE_DIR}/src/app/work_field_view
 )
 
 target_link_libraries(OnionKnight
