@@ -14,7 +14,13 @@ public:
                                 QObject* parent = nullptr);
     ~ComponentInspector();
 
-    void inspect(const QString& modulePath, const QString& className, const QString& tag = QString());
+    void inspect(
+        const QString& modulePath,
+        const QString& virtualPath,
+        const QString& iconPath,
+        const QString& className,
+        const QString& tag = QString()
+    );
 
 signals:
     void metaReady(const QString& tag, const ComponentMeta& meta);
@@ -26,6 +32,8 @@ private slots:
 private:
     struct Request {
         QString modulePath;
+        QString virtualPath;
+        QString iconPath;
         QString className;
         QString tag;
     };

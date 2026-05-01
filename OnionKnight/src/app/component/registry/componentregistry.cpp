@@ -22,27 +22,32 @@ ComponentRegistry::ComponentRegistry(ComponentInspector* inspector,
 
 void ComponentRegistry::registerComponent(const QString& typeId,
                                           const QString& modulePath,
+                                          const QString& virtualPath,
+                                          const QString& iconPath,
                                           const QString& className)
 {
     ComponentEntry& entry = m_entries[typeId];
-    if (entry.modulePath == modulePath && entry.className == className && entry.pending)
-        return;
-
-    if (entry.modulePath == modulePath && entry.className == className && entry.meta.isValid())
+    if (entry.modulePath == modulePath && entry.virtualPath == virtualPath &&
+        entry.iconPath == iconPath && entry.className == className &&
+        (entry.pending || entry.meta.isValid()))
         return;
 
     entry.modulePath = modulePath;
+    entry.virtualPath = virtualPath;
+    entry.iconPath = iconPath;
     entry.className = className;
     entry.meta = ComponentMeta();
     entry.pending = true;
 
-    m_inspector->inspect(modulePath, className, typeId);
+    m_inspector->inspect(modulePath, virtualPath, iconPath, className, typeId);
     if (QFileInfo::exists(modulePath))
         m_watcher->addPath(modulePath);
 }
 
 void ComponentRegistry::changeComponentSource(const QString& typeId,
                                               const QString& newModulePath,
+                                              const QString& newVirtualPath,
+                                              const QString& newIconPath,
                                               const QString& newClassName)
 {
     if (!m_entries.contains(typeId))
@@ -53,11 +58,13 @@ void ComponentRegistry::changeComponentSource(const QString& typeId,
         m_watcher->removePath(entry.modulePath);
 
     entry.modulePath = newModulePath;
+    entry.virtualPath = newVirtualPath;
+    entry.iconPath = newIconPath;
     entry.className = newClassName;
     entry.meta = ComponentMeta();
     entry.pending = true;
 
-    m_inspector->inspect(newModulePath, newClassName, typeId);
+    m_inspector->inspect(newModulePath, newVirtualPath, newIconPath, newClassName, typeId);
 
     if (QFileInfo::exists(newModulePath))
         m_watcher->addPath(newModulePath);
@@ -70,10 +77,12 @@ ComponentMeta ComponentRegistry::currentMeta(const QString& typeId) const
 
 void ComponentRegistry::requestMetaFromSource(const QString& typeId,
                                               const QString& modulePath,
+                                              const QString& virtualPath,
+                                              const QString& iconPath,
                                               const QString& className)
 {
     m_entries[typeId].pending = true;
-    m_inspector->inspect(modulePath, className, typeId);
+    m_inspector->inspect(modulePath, virtualPath, className, typeId);
 }
 
 void ComponentRegistry::onInspectorMetaReady(const QString& tag, const ComponentMeta& meta)
@@ -110,22 +119,18 @@ void ComponentRegistry::onFileChanged(const QString& path)
 
     const ComponentEntry& entry = m_entries[typeId];
 
-    requestMetaFromSource(typeId, entry.modulePath, entry.className);
+    requestMetaFromSource(typeId, entry.modulePath, entry.virtualPath, entry.iconPath, entry.className);
 
-    if (!m_watcher->files().contains(path)) {
-        if (QFileInfo::exists(path))
-            m_watcher->addPath(path);
+    if (!m_watcher->files().contains(path) && QFileInfo::exists(path)) {
+        m_watcher->addPath(path);
     }
 }
 
-void ComponentRegistry::setIconBasePath(const QString& path)
+QString ComponentRegistry::getIconPath(const QString& typeId) const
 {
-    m_iconBasePath = path;
+    return m_entries[typeId].iconPath;
 }
 
-QString ComponentRegistry::getIconPath(const QString& className) const
-{
-    if (m_iconBasePath.isEmpty())
-        return {};
-    return m_iconBasePath + "/" + className.toLower() + ".svg";
+const QMap<QString, ComponentRegistry::ComponentEntry>& ComponentRegistry::allEntries() const {
+    return m_entries;
 }

@@ -1,7 +1,9 @@
 #pragma once
 
 #include "componentregistry.h"
+#include "tabpanel.h"
 #include <QMainWindow>
+#include <QDir>
 
 class WorkField;
 class WorkFieldView;
@@ -15,11 +17,16 @@ public:
     explicit MainWindow(QWidget* parent = nullptr);
     ~MainWindow() override;
 
+protected:
+    void resizeEvent(QResizeEvent* event) override;
+
 private:
     WorkField* m_workField = nullptr;
     WorkFieldView*  m_workFieldView = nullptr;
     ComponentRegistry* m_componentRegistry = nullptr;
+    TabPanel* m_tabPanel;
 
     void initScene();
-    void initRegistry();
+    void initRegistry(const QDir& root);
+    void setupLayout(const QDir& root);
 };

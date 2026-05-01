@@ -17,16 +17,24 @@ qt_add_executable(OnionKnight
     src/app/work_field_view/workfieldview.h
     src/app/work_field_view/workfieldview.cpp
     scripts/component_inspector.py
-    src/app/component_meta/componentmeta.h
-    src/app/component_meta/componentmeta.cpp
-    src/app/component_inspector/componentinspector.h
-    src/app/component_inspector/componentinspector.cpp
-    src/app/component_registry/componentregistry.h
-    src/app/component_registry/componentregistry.cpp
-    src/app/component_port/componentport.h
-    src/app/component_port/componentport.cpp
-    src/app/component_item/componentitem.h
-    src/app/component_item/componentitem.cpp
+    src/app/component/meta/componentmeta.h
+    src/app/component/meta/componentmeta.cpp
+    src/app/component/inspector/componentinspector.h
+    src/app/component/inspector/componentinspector.cpp
+    src/app/component/registry/componentregistry.h
+    src/app/component/registry/componentregistry.cpp
+    src/app/component/port/componentport.h
+    src/app/component/port/componentport.cpp
+    src/app/component/item/componentitem.h
+    src/app/component/item/componentitem.cpp
+    src/app/component/tree_model/componenttreemodel.h
+    src/app/component/tree_model/componenttreemodel.cpp
+    src/app/component/filter_proxy_model/componentfilterproxymodel.h
+    src/app/component/filter_proxy_model/componentfilterproxymodel.cpp
+    src/app/component/tab_widget/componenttabwidget.h
+    src/app/component/tab_widget/componenttabwidget.cpp
+    src/app/tab_panel/tabpanel.h
+    src/app/tab_panel/tabpanel.cpp
 )
 
 target_include_directories(OnionKnight
@@ -34,11 +42,15 @@ target_include_directories(OnionKnight
         ${CMAKE_CURRENT_SOURCE_DIR}/src/app/main_window
         ${CMAKE_CURRENT_SOURCE_DIR}/src/app/work_field
         ${CMAKE_CURRENT_SOURCE_DIR}/src/app/work_field_view
-        ${CMAKE_CURRENT_SOURCE_DIR}/src/app/component_meta
-        ${CMAKE_CURRENT_SOURCE_DIR}/src/app/component_inspector
-        ${CMAKE_CURRENT_SOURCE_DIR}/src/app/component_registry
-        ${CMAKE_CURRENT_SOURCE_DIR}/src/app/component_port
-        ${CMAKE_CURRENT_SOURCE_DIR}/src/app/component_item
+        ${CMAKE_CURRENT_SOURCE_DIR}/src/app/component/meta
+        ${CMAKE_CURRENT_SOURCE_DIR}/src/app/component/inspector
+        ${CMAKE_CURRENT_SOURCE_DIR}/src/app/component/registry
+        ${CMAKE_CURRENT_SOURCE_DIR}/src/app/component/port
+        ${CMAKE_CURRENT_SOURCE_DIR}/src/app/component/item
+        ${CMAKE_CURRENT_SOURCE_DIR}/src/app/component/tree_model
+        ${CMAKE_CURRENT_SOURCE_DIR}/src/app/component/filter_proxy_model
+        ${CMAKE_CURRENT_SOURCE_DIR}/src/app/component/tab_widget
+        ${CMAKE_CURRENT_SOURCE_DIR}/src/app/tab_panel
 )
 
 target_link_libraries(OnionKnight

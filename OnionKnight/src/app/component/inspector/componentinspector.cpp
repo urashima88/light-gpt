@@ -22,9 +22,15 @@ ComponentInspector::~ComponentInspector()
     }
 }
 
-void ComponentInspector::inspect(const QString& modulePath, const QString& className, const QString& tag)
+void ComponentInspector::inspect(
+    const QString& modulePath,
+    const QString& virtualPath,
+    const QString& iconPath,
+    const QString& className,
+    const QString& tag
+)
 {
-    m_queue.enqueue({modulePath, className, tag});
+    m_queue.enqueue({modulePath, virtualPath, iconPath, className, tag});
     if (!m_busy) {
         startNext();
     }

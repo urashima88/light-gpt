@@ -17,12 +17,33 @@ public:
                                QFileSystemWatcher* watcher,
                                QObject* parent = nullptr);
 
-    void registerComponent(const QString& typeId, const QString& modulePath, const QString& className);
-    void changeComponentSource(const QString& typeId, const QString& newModulePath, const QString& newClassName);
+    struct ComponentEntry {
+        QString modulePath;
+        QString className;
+        QString virtualPath;
+        QString iconPath;
+        ComponentMeta meta;
+        bool pending = false;
+    };
+
+    void registerComponent(
+        const QString& typeId,
+        const QString& modulePath,
+        const QString& virtualPath,
+        const QString& iconPath,
+        const QString& className
+    );
+    void changeComponentSource(
+        const QString& typeId,
+        const QString& newModulePath,
+        const QString& newVirtualPath,
+        const QString& newIconPath,
+        const QString& newClassName
+    );
 
     ComponentMeta currentMeta(const QString& typeId) const;
 
-    void setIconBasePath(const QString& path);
+    const QMap<QString, ComponentEntry>& allEntries() const;
     QString getIconPath(const QString& className) const;
 
 signals:
@@ -35,17 +56,15 @@ private slots:
     void onFileChanged(const QString& path);
 
 private:
-    struct ComponentEntry {
-        QString modulePath;
-        QString className;
-        ComponentMeta meta;
-        bool pending = false;
-    };
-
-    void requestMetaFromSource(const QString& typeId, const QString& modulePath, const QString& className);
+    void requestMetaFromSource(
+        const QString& typeId,
+        const QString& modulePath,
+        const QString& virtualPath,
+        const QString& iconPath,
+        const QString& className
+    );
 
     ComponentInspector* m_inspector;
     QFileSystemWatcher* m_watcher;
     QMap<QString, ComponentEntry> m_entries;
-    QString m_iconBasePath;
 };
