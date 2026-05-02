@@ -69,7 +69,7 @@ void ComponentTreeModel::insertEntry(const QString& typeId,
 
     QIcon icon = componentIcon(typeId);
     auto* compItem = new QStandardItem(icon, className);
-    compItem->setData(className, ComponentRole);
+    compItem->setData(typeId, ComponentRole);
     compItem->setData(QStringLiteral("component"), NodeRole);
     compItem->setFlags(Qt::ItemIsEnabled | Qt::ItemIsSelectable | Qt::ItemIsDragEnabled);
 

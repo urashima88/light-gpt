@@ -1,10 +1,14 @@
 #include "workfieldview.h"
+#include "componentregistry.h"
+#include "componentitem.h"
 #include <QWheelEvent>
 #include <QMouseEvent>
 #include <QScrollBar>
+#include <qmimedata.h>
 
-WorkFieldView::WorkFieldView(QWidget* parent)
+WorkFieldView::WorkFieldView(ComponentRegistry* registry, QWidget* parent)
     : QGraphicsView(parent)
+    , m_registry(registry)
 {
     setTransformationAnchor(QGraphicsView::AnchorUnderMouse);
 
@@ -14,6 +18,8 @@ WorkFieldView::WorkFieldView(QWidget* parent)
     setViewportUpdateMode(QGraphicsView::FullViewportUpdate);
 
     setFocusPolicy(Qt::StrongFocus);
+
+    setAcceptDrops(true);
 }
 
 void WorkFieldView::wheelEvent(QWheelEvent* event)
@@ -29,7 +35,7 @@ void WorkFieldView::wheelEvent(QWheelEvent* event)
 
 void WorkFieldView::mousePressEvent(QMouseEvent* event)
 {
-    if (event->button() == Qt::LeftButton) {
+    if (event->button() == Qt::MiddleButton) {
         QGraphicsItem* item = itemAt(event->pos());
         if (item == nullptr) {
             m_isPanning = true;
@@ -57,11 +63,65 @@ void WorkFieldView::mouseMoveEvent(QMouseEvent* event)
 
 void WorkFieldView::mouseReleaseEvent(QMouseEvent* event)
 {
-    if (event->button() == Qt::LeftButton && m_isPanning) {
+    if (event->button() == Qt::MiddleButton && m_isPanning) {
         m_isPanning = false;
         setCursor(Qt::ArrowCursor);
         event->accept();
         return;
     }
     QGraphicsView::mouseReleaseEvent(event);
+}
+
+void WorkFieldView::dragEnterEvent(QDragEnterEvent* event)
+{
+    if (event->mimeData()->hasFormat(QStringLiteral("application/x-component-type"))) {
+        event->acceptProposedAction();
+    } else {
+        QGraphicsView::dragEnterEvent(event);
+    }
+}
+
+void WorkFieldView::dragMoveEvent(QDragMoveEvent* event)
+{
+    if (event->mimeData()->hasFormat(QStringLiteral("application/x-component-type"))) {
+        event->acceptProposedAction();
+    } else {
+        QGraphicsView::dragMoveEvent(event);
+    }
+}
+
+void WorkFieldView::dropEvent(QDropEvent* event)
+{
+    if (!event->mimeData()->hasFormat(QStringLiteral("application/x-component-type"))) {
+        QGraphicsView::dropEvent(event);
+        return;
+    }
+
+    const QString typeId = QString::fromUtf8(
+        event->mimeData()->data(QStringLiteral("application/x-component-type")));
+
+    if (typeId.isEmpty()) {
+        event->ignore();
+        return;
+    }
+
+    auto* item = new ComponentItem(typeId, m_registry);
+    if (!item) {
+        event->ignore();
+        return;
+    }
+
+    if (scene()) {
+        scene()->addItem(item);
+
+        const QPointF scenePos = mapToScene(event->pos());
+        const QRectF br = item->boundingRect();
+        item->setPos(scenePos - QPointF(br.width() / 2.0, br.height() / 2.0));
+
+        item->animateAppearance();
+        event->acceptProposedAction();
+    } else {
+        delete item;
+        event->ignore();
+    }
 }

@@ -23,15 +23,16 @@ MainWindow::MainWindow(QWidget* parent)
     root.cdUp();
     root.cdUp();
 
-    initScene();
     initRegistry(root);
+    initScene();
     setupLayout(root);
 
-    auto* componentItem = new ComponentItem("Linear", m_componentRegistry);
+    auto* componentItem = new ComponentItem("Linear", m_registry);
     m_workField->addItem(componentItem);
     QPointF viewCenter = m_workFieldView->mapToScene(
         m_workFieldView->viewport()->rect().center());
     componentItem->setPos(viewCenter - QPointF(60, 30));
+    componentItem->animateAppearance();
 }
 
 MainWindow::~MainWindow() {}
@@ -39,7 +40,7 @@ MainWindow::~MainWindow() {}
 void MainWindow::initScene()
 {
     m_workField = new WorkField(this);
-    m_workFieldView = new WorkFieldView(this);
+    m_workFieldView = new WorkFieldView(m_registry, this);
     m_workFieldView->setScene(m_workField);
 
     setCentralWidget(m_workFieldView);
@@ -53,9 +54,9 @@ void MainWindow::initRegistry(const QDir& root)
     ComponentInspector* inspector = new ComponentInspector(pythonExe, inspectorScript);
     QFileSystemWatcher* watcher = new QFileSystemWatcher();
 
-    m_componentRegistry = new ComponentRegistry(inspector, watcher, this);
+    m_registry = new ComponentRegistry(inspector, watcher, this);
 
-    m_componentRegistry->registerComponent("Linear",
+    m_registry->registerComponent("Linear",
                                   root.filePath("lib/ml/layers/linear/linear.py"),
                                   "lib/ml/layers/linear",
                                   root.filePath("OnionKnight/icons/linear.svg"),
@@ -67,7 +68,7 @@ void MainWindow::setupLayout(const QDir& root) {
 
     setCentralWidget(m_workFieldView);
 
-    m_tabPanel = new TabPanel(m_componentRegistry, componentsTabPath, this);
+    m_tabPanel = new TabPanel(m_registry, componentsTabPath, this);
 
     const int panelWidth = 200;
     m_tabPanel->setFixedWidth(panelWidth);

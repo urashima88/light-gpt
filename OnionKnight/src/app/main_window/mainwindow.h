@@ -23,7 +23,7 @@ protected:
 private:
     WorkField* m_workField = nullptr;
     WorkFieldView*  m_workFieldView = nullptr;
-    ComponentRegistry* m_componentRegistry = nullptr;
+    ComponentRegistry* m_registry = nullptr;
     TabPanel* m_tabPanel;
 
     void initScene();

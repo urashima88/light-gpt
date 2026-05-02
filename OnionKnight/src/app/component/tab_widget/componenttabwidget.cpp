@@ -67,6 +67,8 @@ void ComponentTabWidget::connectSearch()
             m_treeView->collapseAll();
             for (int i = 0; i < m_proxyModel->rowCount(); ++i)
                 m_treeView->expand(m_proxyModel->index(i, 0));
+        } else {
+            m_treeView->expandAll();
         }
     });
 }

@@ -25,3 +25,14 @@ bool ComponentFilterProxyModel::filterAcceptsRow(int sourceRow,
     const QString text = sourceModel()->data(index, Qt::DisplayRole).toString();
     return text.contains(m_filterString, Qt::CaseInsensitive);
 }
+
+QStringList ComponentFilterProxyModel::mimeTypes() const {
+    return sourceModel()->mimeTypes();
+}
+
+QMimeData* ComponentFilterProxyModel::mimeData(const QModelIndexList& proxyIndexes) const {
+    QModelIndexList sourceIndexes;
+    for (const QModelIndex& proxyIdx : proxyIndexes)
+        sourceIndexes.append(mapToSource(proxyIdx));
+    return sourceModel()->mimeData(sourceIndexes);
+}

@@ -17,6 +17,8 @@ public:
                    QGraphicsItem* parent = nullptr);
 
     QRectF boundingRect() const override;
+    void animateAppearance();
+
     void paint(QPainter* painter, const QStyleOptionGraphicsItem* option,
                QWidget* widget) override;
     QString typeId() const { return m_typeId; }

@@ -7,6 +7,8 @@
 #include <QSvgRenderer>
 #include <QGraphicsSceneContextMenuEvent>
 #include <QMenu>
+#include <QPropertyAnimation>
+#include <QGraphicsOpacityEffect>
 
 ComponentItem::ComponentItem(const QString& typeId, ComponentRegistry* registry, QGraphicsItem* parent)
     : QGraphicsObject(parent)
@@ -167,4 +169,24 @@ void ComponentItem::loadIcon()
     } else {
         m_iconLoaded = false;
     }
+}
+
+void ComponentItem::animateAppearance()
+{
+    if (graphicsEffect() == nullptr) {
+        auto* effect = new QGraphicsOpacityEffect(this);
+        effect->setOpacity(0.0);
+        setGraphicsEffect(effect);
+    }
+
+    if (auto* oldAnim = findChild<QPropertyAnimation*>()) {
+        oldAnim->stop();
+        oldAnim->deleteLater();
+    }
+
+    auto* anim = new QPropertyAnimation(graphicsEffect(), "opacity", this);
+    anim->setDuration(250);
+    anim->setStartValue(0.0);
+    anim->setEndValue(1.0);
+    anim->start(QAbstractAnimation::DeleteWhenStopped);
 }
