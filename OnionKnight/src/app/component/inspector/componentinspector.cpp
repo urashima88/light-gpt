@@ -65,6 +65,7 @@ void ComponentInspector::startNext()
     m_process->start(m_pythonExe, args);
 }
 
+#include <QDebug>
 void ComponentInspector::onProcessFinished(int exitCode, QProcess::ExitStatus exitStatus)
 {
     QByteArray stdOut = m_process->readAllStandardOutput();

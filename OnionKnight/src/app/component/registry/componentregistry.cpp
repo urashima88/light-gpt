@@ -82,7 +82,7 @@ void ComponentRegistry::requestMetaFromSource(const QString& typeId,
                                               const QString& className)
 {
     m_entries[typeId].pending = true;
-    m_inspector->inspect(modulePath, virtualPath, className, typeId);
+    m_inspector->inspect(modulePath, virtualPath, iconPath, className, typeId);
 }
 
 void ComponentRegistry::onInspectorMetaReady(const QString& tag, const ComponentMeta& meta)
