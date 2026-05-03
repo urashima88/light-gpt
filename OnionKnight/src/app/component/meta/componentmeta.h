@@ -19,7 +19,7 @@ struct IOInfo {
 class ComponentMeta {
 public:
     QString className;
-    QString modulePath;
+    QString filePath;
     QVector<ParamInfo> constructorParams;
     QVector<IOInfo> inputs;
     QVector<IOInfo> outputs;
@@ -27,5 +27,6 @@ public:
     bool isValid() const { return !className.isEmpty(); }
 
     static ComponentMeta fromJson(const QJsonObject& json);
+    static QVariant parseDefaultValue(const QString& value, const QString& type);
     QJsonObject toJson() const;
 };

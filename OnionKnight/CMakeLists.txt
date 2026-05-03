@@ -16,11 +16,9 @@ qt_add_executable(OnionKnight
 
     src/app/work_field_view/workfieldview.h
     src/app/work_field_view/workfieldview.cpp
-    scripts/component_inspector.py
+
     src/app/component/meta/componentmeta.h
     src/app/component/meta/componentmeta.cpp
-    src/app/component/inspector/componentinspector.h
-    src/app/component/inspector/componentinspector.cpp
     src/app/component/registry/componentregistry.h
     src/app/component/registry/componentregistry.cpp
     src/app/component/port/componentport.h
@@ -35,6 +33,11 @@ qt_add_executable(OnionKnight
     src/app/component/tab_widget/componenttabwidget.cpp
     src/app/tab_panel/tabpanel.h
     src/app/tab_panel/tabpanel.cpp
+    scripts/component_code_editor.py
+    src/app/component/code_manager/componentcodemanager.h
+    src/app/component/code_manager/componentcodemanager.cpp
+    src/app/connection_item/connectionitem.h
+    src/app/connection_item/connectionitem.cpp
 )
 
 target_include_directories(OnionKnight
@@ -43,14 +46,15 @@ target_include_directories(OnionKnight
         ${CMAKE_CURRENT_SOURCE_DIR}/src/app/work_field
         ${CMAKE_CURRENT_SOURCE_DIR}/src/app/work_field_view
         ${CMAKE_CURRENT_SOURCE_DIR}/src/app/component/meta
-        ${CMAKE_CURRENT_SOURCE_DIR}/src/app/component/inspector
         ${CMAKE_CURRENT_SOURCE_DIR}/src/app/component/registry
         ${CMAKE_CURRENT_SOURCE_DIR}/src/app/component/port
         ${CMAKE_CURRENT_SOURCE_DIR}/src/app/component/item
         ${CMAKE_CURRENT_SOURCE_DIR}/src/app/component/tree_model
         ${CMAKE_CURRENT_SOURCE_DIR}/src/app/component/filter_proxy_model
         ${CMAKE_CURRENT_SOURCE_DIR}/src/app/component/tab_widget
+        ${CMAKE_CURRENT_SOURCE_DIR}/src/app/component/code_manager
         ${CMAKE_CURRENT_SOURCE_DIR}/src/app/tab_panel
+        ${CMAKE_CURRENT_SOURCE_DIR}/src/app/connection_item
 )
 
 target_link_libraries(OnionKnight
@@ -63,8 +67,8 @@ target_link_libraries(OnionKnight
 add_custom_command(
     TARGET OnionKnight POST_BUILD
     COMMAND ${CMAKE_COMMAND} -E copy_if_different
-        ${CMAKE_CURRENT_SOURCE_DIR}/scripts/component_inspector.py
-        $<TARGET_FILE_DIR:OnionKnight>/scripts/component_inspector.py
+        ${CMAKE_CURRENT_SOURCE_DIR}/scripts/component_code_editor.py
+        $<TARGET_FILE_DIR:OnionKnight>/scripts/component_code_editor..py
 )
 
 install(TARGETS OnionKnight

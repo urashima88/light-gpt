@@ -1,6 +1,8 @@
 #include "workfieldview.h"
 #include "componentregistry.h"
 #include "componentitem.h"
+#include "componentport.h"
+#include "connectionitem.h"
 #include <QWheelEvent>
 #include <QMouseEvent>
 #include <QScrollBar>
@@ -105,23 +107,39 @@ void WorkFieldView::dropEvent(QDropEvent* event)
         return;
     }
 
-    auto* item = new ComponentItem(typeId, m_registry);
-    if (!item) {
-        event->ignore();
+    QPointF scenePos = mapToScene(event->position().toPoint());
+    emit componentDropped(typeId, scenePos);
+    event->acceptProposedAction();
+}
+
+void WorkFieldView::keyPressEvent(QKeyEvent* event)
+{
+    if (event->key() == Qt::Key_Delete) {
+        QList<QGraphicsItem*> selected = scene()->selectedItems();
+        for (auto* item : selected) {
+            if (auto* conn = dynamic_cast<ConnectionItem*>(item)) {
+                ComponentPort* sp = conn->startPort();
+                ComponentPort* ep = conn->endPort();
+                if (sp) {
+                    ComponentItem* owner = sp->ownerComponent();
+                    if (owner) owner->onConnectionRemoved(conn);
+                }
+                if (ep) {
+                    ComponentItem* owner = ep->ownerComponent();
+                    if (owner) owner->onConnectionRemoved(conn);
+                }
+                if (conn->scene()) conn->scene()->removeItem(conn);
+                delete conn;
+            }
+        }
+        selected = scene()->selectedItems();
+        for (auto* item : selected) {
+            if (auto* comp = dynamic_cast<ComponentItem*>(item)) {
+                comp->deleteComponent();
+            }
+        }
+        event->accept();
         return;
     }
-
-    if (scene()) {
-        scene()->addItem(item);
-
-        const QPointF scenePos = mapToScene(event->pos());
-        const QRectF br = item->boundingRect();
-        item->setPos(scenePos - QPointF(br.width() / 2.0, br.height() / 2.0));
-
-        item->animateAppearance();
-        event->acceptProposedAction();
-    } else {
-        delete item;
-        event->ignore();
-    }
+    QGraphicsView::keyPressEvent(event);
 }
