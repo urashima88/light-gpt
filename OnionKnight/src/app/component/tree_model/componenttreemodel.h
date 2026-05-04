@@ -12,11 +12,6 @@ class ComponentTreeModel: public QStandardItemModel
 {
     Q_OBJECT
 
-    enum ItemRoles {
-        NodeRole = Qt::UserRole,
-        ComponentRole = Qt::UserRole + 1
-    };
-
 public:
     explicit ComponentTreeModel(
         ComponentRegistry* registry,
@@ -33,10 +28,10 @@ public:
     QStringList mimeTypes() const override;
 
 private:
-    void insertEntry(const QString& typeId, const QString& virtualPath, const QString& className);
-    void sortAll();
-
-    QIcon componentIcon(const QString& className) const;
+    enum ItemRoles {
+        NodeRole = Qt::UserRole,
+        ComponentRole = Qt::UserRole + 1
+    };
 
     ComponentRegistry* m_registry;
     QIcon m_folderIcon;
@@ -44,6 +39,11 @@ private:
 
     mutable QHash<QString, QIcon> m_iconCache;
     QHash<QStringList, QStandardItem*> m_pathIndex;
+
+    void insertEntry(const QString& typeId, const QString& virtualPath, const QString& className);
+    void sortAll();
+
+    QIcon componentIcon(const QString& className) const;
 };
 
 

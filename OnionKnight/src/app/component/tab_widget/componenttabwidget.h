@@ -18,12 +18,12 @@ public:
     void refresh();
 
 private:
-    void setupUi();
-    void connectSearch();
-
     ComponentRegistry* m_registry;
     QLineEdit* m_searchEdit;
     QTreeView* m_treeView;
     ComponentTreeModel* m_model;
     ComponentFilterProxyModel* m_proxyModel;
+
+    void setupUi();
+    void connectSearch();
 };

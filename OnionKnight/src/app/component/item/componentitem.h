@@ -3,7 +3,7 @@
 #include "componentmeta.h"
 #include <QGraphicsObject>
 #include <QVector>
-#include <QPixmap>
+#include <QIcon>
 
 class ComponentRegistry;
 class ComponentPort;
@@ -25,15 +25,27 @@ public:
     ~ComponentItem() override;
 
     QRectF boundingRect() const override;
-    void animateAppearance();
-
     void paint(QPainter* painter, const QStyleOptionGraphicsItem* option,
                QWidget* widget) override;
-    QString typeId() const { return m_typeId; }
+    void animateAppearance();
+
     ComponentMeta currentMeta() const { return m_meta; }
+    QString typeId() const { return m_typeId; }
+
+    void setComponentCodeManager(ComponentCodeManager* codeManager) { m_codeManager = codeManager; }
+    ComponentCodeManager* componentCodeManager() const { return m_codeManager; }
+
+    void setParentComponentItem(ComponentItem* parentComponentItem) { m_parentComponentItem = parentComponentItem; }
 
     bool isExpanded() const { return m_expanded; }
     void setExpanded(bool expanded);
+
+    void setVariableName(const QString& name) { m_variableName = name; }
+    QString variableName() const { return m_variableName; }
+
+    void setCustomParams(const QVariantMap& params) { m_customParams = params; }
+    QVariantMap customParams() const { return m_customParams; }
+
     void addChild(ComponentItem* child);
     void removeChild(ComponentItem* child);
     QVector<ComponentItem*> childItems() const { return m_childItems; }
@@ -46,20 +58,7 @@ public:
     void updateCodeFromChildren();
     void checkParentContainer();
     void detachFromParent();
-
-    void setComponentCodeManager(ComponentCodeManager* codeManager) { m_codeManager = codeManager; }
-    ComponentCodeManager* componentCodeManager() const { return m_codeManager; }
-
-    void setParentComponentItem(ComponentItem* parentComponentItem) { m_parentComponentItem = parentComponentItem; }
-
-    void setVariableName(const QString& name) { m_variableName = name; }
-    QString variableName() const { return m_variableName; }
-
-    void setCustomParams(const QVariantMap& params) { m_customParams = params; }
-    QVariantMap customParams() const { return m_customParams; }
-
     bool isAncestorOf(ComponentItem* descendant) const;
-
     void deleteComponent();
 
 signals:
@@ -76,39 +75,6 @@ private slots:
     void onMetaReady(const QString& id, const ComponentMeta& meta);
 
 private:
-    void rebuildLayout();
-    void clearPorts();
-    QSizeF calculateRequiredSize() const;
-    void loadIcon();
-    void performCleanup();
-
-    QString m_typeId;
-    ComponentRegistry* m_registry;
-    ComponentItem* m_parentComponentItem;
-    ComponentMeta m_meta;
-
-    QVector<ComponentPort*> m_inputPorts;
-    QVector<ComponentPort*> m_outputPorts;
-
-    QVector<ConnectionItem*> m_outgoingConns;
-    QVector<ConnectionItem*> m_incomingConns;
-    ComponentCodeManager* m_codeManager = nullptr;
-
-    bool m_expanded = false;
-    QVector<ComponentItem*> m_childItems;
-    QSizeF m_expandedSizeHint {500, 400};
-
-    QSizeF m_size;
-    QPixmap m_iconPixmap;
-    bool m_iconLoaded = false;
-
-    QColor m_color;
-
-    QString m_variableName;
-    QVariantMap m_customParams;
-
-    bool m_isBeingDeleted = false;
-
     static constexpr qreal HEADER_HEIGHT = 28.0;
     static constexpr qreal PORT_MARGIN = 8.0;
     static constexpr qreal PORT_SPACING = 20.0;
@@ -116,4 +82,35 @@ private:
     static constexpr qreal PADDING = 8.0;
     static constexpr qreal ICON_SIZE = 18.0;
     static constexpr qreal ICON_TEXT_GAP = 4.0;
+
+    QSizeF m_size;
+    QIcon m_icon;
+    bool m_iconLoaded = false;
+    QColor m_color;
+    bool m_expanded = false;
+    QSizeF m_expandedSizeHint {500, 400};
+
+    QString m_variableName;
+    QVariantMap m_customParams;
+    bool m_isBeingDeleted = false;
+
+    ComponentRegistry* m_registry;
+    ComponentItem* m_parentComponentItem;
+    ComponentMeta m_meta;
+    QString m_typeId;
+    ComponentCodeManager* m_codeManager = nullptr;
+
+    QVector<ComponentPort*> m_inputPorts;
+    QVector<ComponentPort*> m_outputPorts;
+
+    QVector<ConnectionItem*> m_outgoingConns;
+    QVector<ConnectionItem*> m_incomingConns;
+
+    QVector<ComponentItem*> m_childItems;
+
+    void rebuildLayout();
+    void clearPorts();
+    QSizeF calculateRequiredSize() const;
+    void loadIcon();
+    void performCleanup();
 };

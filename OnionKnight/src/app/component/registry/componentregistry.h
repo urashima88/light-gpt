@@ -61,6 +61,10 @@ private slots:
     void onFileChanged(const QString& path);
 
 private:
+    ComponentCodeManager* m_codeManager;
+    QFileSystemWatcher* m_watcher;
+    QMap<QString, ComponentEntry> m_entries;
+
     void requestMetaFromSource(
         const QString& typeId,
         const QString& filePath,
@@ -69,8 +73,4 @@ private:
         const QString& className,
         const QColor& color
     );
-
-    ComponentCodeManager* m_codeManager;
-    QFileSystemWatcher* m_watcher;
-    QMap<QString, ComponentEntry> m_entries;
 };

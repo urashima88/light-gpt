@@ -6,7 +6,6 @@
 #include <QPainter>
 #include <QFont>
 #include <QFontMetrics>
-#include <QSvgRenderer>
 #include <QGraphicsSceneContextMenuEvent>
 #include <QMenu>
 #include <QPropertyAnimation>
@@ -69,7 +68,8 @@ void ComponentItem::paint(QPainter* painter, const QStyleOptionGraphicsItem*, QW
 
         // icon
         if (m_iconLoaded) {
-            painter->drawPixmap(PADDING, (HEADER_HEIGHT - ICON_SIZE) / 2, m_iconPixmap);
+            QRectF iconRect(PADDING, (HEADER_HEIGHT - ICON_SIZE) / 2, ICON_SIZE, ICON_SIZE);
+            m_icon.paint(painter, iconRect.toRect(), Qt::AlignCenter, QIcon::Normal, QIcon::On);
         }
 
         // name
@@ -97,7 +97,8 @@ void ComponentItem::paint(QPainter* painter, const QStyleOptionGraphicsItem*, QW
 
         // icon
         if (m_iconLoaded) {
-            painter->drawPixmap(PADDING, (HEADER_HEIGHT - ICON_SIZE) / 2, m_iconPixmap);
+            QRectF iconRect(PADDING, (HEADER_HEIGHT - ICON_SIZE) / 2, ICON_SIZE, ICON_SIZE);
+            m_icon.paint(painter, iconRect.toRect(), Qt::AlignCenter, QIcon::Normal, QIcon::On);
         }
 
         // name
@@ -266,16 +267,8 @@ void ComponentItem::loadIcon()
         return;
     }
 
-    QSvgRenderer svg(iconPath);
-    if (svg.isValid()) {
-        m_iconPixmap = QPixmap(ICON_SIZE, ICON_SIZE);
-        m_iconPixmap.fill(Qt::transparent);
-        QPainter p(&m_iconPixmap);
-        svg.render(&p);
-        m_iconLoaded = true;
-    } else {
-        m_iconLoaded = false;
-    }
+    m_icon = QIcon(iconPath);
+    m_iconLoaded = !m_icon.isNull();
 }
 
 void ComponentItem::animateAppearance()

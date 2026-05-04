@@ -17,8 +17,8 @@ public:
     );
 
 private:
-    void setupTabs(ComponentRegistry* registry);
-
     QTabWidget* m_tabWidget;
     QString m_componentsTabIconPath;
+
+    void setupTabs(ComponentRegistry* registry);
 };

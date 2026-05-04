@@ -29,11 +29,6 @@ protected:
     QVariant itemChange(GraphicsItemChange change, const QVariant& value) override;
 
 private:
-    void startNewConnection();
-    void updateTempCurve(const QPointF& scenePos);
-    void finishConnection(const QPointF& scenePos);
-    void cancelConnection();
-
     QString m_name;
     PortType m_type;
     QGraphicsTextItem* m_label;
@@ -42,4 +37,9 @@ private:
     bool m_dragging = false;
 
     friend class ConnectionItem;
+
+    void startNewConnection();
+    void updateTempCurve(const QPointF& scenePos);
+    void finishConnection(const QPointF& scenePos);
+    void cancelConnection();
 };

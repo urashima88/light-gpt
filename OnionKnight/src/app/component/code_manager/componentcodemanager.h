@@ -61,15 +61,15 @@ private slots:
     void onProcessError(QProcess::ProcessError error);
 
 private:
-    void startNext();
-    void processInspectResult(const QJsonObject& json);
-    void processAnalyzeResult(const  QJsonObject& json);
+    QString m_pythonExe;
+    QString m_editorScript;
 
     QProcess* m_process = nullptr;
     QQueue<CodeRequest> m_queue;
     CodeRequest m_currentRequest;
     bool m_busy = false;
 
-    QString m_pythonExe;
-    QString m_editorScript;
+    void startNext();
+    void processInspectResult(const QJsonObject& json);
+    void processAnalyzeResult(const  QJsonObject& json);
 };
