@@ -7,7 +7,3 @@ This project aims to be highly adaptable and offer a wide range of tools for tra
 
 A module for interacting with LLMs is currently being developed.
 
-
-## Training
-`python src/train.py --env=.env --config=configs/train.yaml`
-
